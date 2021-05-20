@@ -1,0 +1,39 @@
+import {apiCall} from '../../services/api';
+import {addError} from './errors';
+import {LOAD_MESSAGES, REMOVE_MESSAGE} from '../actionTypes';
+
+const url = 'https://warbler-server-ii.herokuapp.com'
+
+export const loadMessages = messages =>({
+	type: LOAD_MESSAGES,
+	messages
+})
+
+export const remove = id =>({
+	type: REMOVE_MESSAGE,
+	id
+})
+
+export const removeMessage = (userId, messageId) =>{
+	return dispatch =>{
+		return apiCall('delete', `/api/users/${userId}/messages/${messageId}`)
+		.then(()=> dispatch(remove(messageId)))
+		.catch(err =>  dispatch(addError(err.message)))
+	}
+}
+
+export const fetchMessages = ()=>{
+	return dispatch =>{
+		return apiCall('get', `/api/messages`)
+		.then(res => dispatch(loadMessages(res)))
+		.catch(err => dispatch(addError(err.message)))
+	}
+}
+
+export const postNewMessage = text => (dispatch, getState) =>{
+	let {currentUser} = getState();
+	const id = currentUser.user._id;
+	return apiCall('post', `/api/users/${id}/messages/`, {text})
+	.then(res => {})
+	.catch(err => dispatch(addError(err.message)));
+}
